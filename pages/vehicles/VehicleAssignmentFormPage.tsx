@@ -1,14 +1,27 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/PageHeader';
 import { vehicleAssignmentsApi } from '../../services/api';
-import { VehicleAssignment } from '../../types';
+import { VehicleAssignment, City } from '../../types';
+import { ethiopianCities } from '../../data/cities';
+import SearchableSelect from '../../components/SearchableSelect';
+
+declare var L: any;
 
 const VehicleAssignmentFormPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditing = Boolean(id);
   const [assignment, setAssignment] = useState<Partial<VehicleAssignment>>({});
+  
+  const [originCoords, setOriginCoords] = useState<City | null>(null);
+  const [destCoords, setDestCoords] = useState<City | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<any>(null);
+  const featureGroupRef = useRef<any>(null);
+
+  const cityOptions = ethiopianCities.map(city => ({ value: city.name, label: city.name }));
   
   useEffect(() => {
     if (isEditing && id) {
@@ -24,10 +37,66 @@ const VehicleAssignmentFormPage = () => {
       });
     }
   }, [id, isEditing]);
+  
+  useEffect(() => {
+    const origin = ethiopianCities.find(c => c.name === assignment.origin);
+    setOriginCoords(origin || null);
+    
+    const destination = ethiopianCities.find(c => c.name === assignment.destination);
+    setDestCoords(destination || null);
+  }, [assignment.origin, assignment.destination]);
+
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+    const map = L.map(mapContainerRef.current).setView([9.025, 38.7469], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    mapRef.current = map;
+    featureGroupRef.current = L.featureGroup().addTo(map);
+  }, []);
+
+  useEffect(() => {
+    if (!mapRef.current || !featureGroupRef.current) return;
+    
+    featureGroupRef.current.clearLayers();
+    
+    const markers = [];
+    if (originCoords) {
+        const marker = L.marker([originCoords.lat, originCoords.lng]).bindPopup(`<b>Origin:</b> ${originCoords.name}`);
+        featureGroupRef.current.addLayer(marker);
+        markers.push(marker);
+    }
+    if (destCoords) {
+        const marker = L.marker([destCoords.lat, destCoords.lng]).bindPopup(`<b>Destination:</b> ${destCoords.name}`);
+        featureGroupRef.current.addLayer(marker);
+        markers.push(marker);
+    }
+
+    if (originCoords && destCoords) {
+        const latLngs = [
+            [originCoords.lat, originCoords.lng],
+            [destCoords.lat, destCoords.lng]
+        ];
+        L.polyline(latLngs, { color: '#059669', weight: 4 }).addTo(featureGroupRef.current);
+    }
+    
+    if (markers.length > 0) {
+        const bounds = featureGroupRef.current.getBounds();
+        mapRef.current.fitBounds(bounds.pad(0.5));
+    } else {
+        mapRef.current.setView([9.025, 38.7469], 6);
+    }
+  }, [originCoords, destCoords]);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setAssignment(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCityChange = (fieldName: 'origin' | 'destination') => (value: string) => {
+    setAssignment(prev => ({ ...prev, [fieldName]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -63,14 +132,22 @@ const VehicleAssignmentFormPage = () => {
                 <option value="2">Driver 2</option>
               </select>
             </div>
-            <div>
-              <label htmlFor="origin" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Origin</label>
-              <input type="text" name="origin" id="origin" value={assignment.origin || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
-            </div>
-            <div>
-              <label htmlFor="destination" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Destination</label>
-              <input type="text" name="destination" id="destination" value={assignment.destination || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
-            </div>
+            <SearchableSelect
+              id="origin"
+              label="Origin"
+              options={cityOptions}
+              value={assignment.origin || ''}
+              onChange={handleCityChange('origin')}
+              placeholder="Type to search for a city..."
+            />
+            <SearchableSelect
+              id="destination"
+              label="Destination"
+              options={cityOptions}
+              value={assignment.destination || ''}
+              onChange={handleCityChange('destination')}
+              placeholder="Type to search for a city..."
+            />
             <div>
               <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Time</label>
               <input type="datetime-local" name="startTime" id="startTime" value={assignment.startTime || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
@@ -90,6 +167,10 @@ const VehicleAssignmentFormPage = () => {
             </button>
           </div>
         </form>
+      </div>
+      <div className="mt-8">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Route Preview</h3>
+        <div ref={mapContainerRef} className="h-80 w-full rounded-lg bg-gray-200 dark:bg-gray-700" />
       </div>
     </div>
   );

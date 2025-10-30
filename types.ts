@@ -140,3 +140,20 @@ export interface AuditLog {
   timestamp: string;
   details: string;
 }
+
+export interface VehicleCheckin {
+  id: number;
+  vehicleId: number;
+  vehiclePlate: string;
+  timestamp: string;
+  latitude: number;
+  longitude: number;
+  note?: string;
+  photoUrl?: string;
+}
+
+export interface City {
+  name: string;
+  lat: number;
+  lng: number;
+}

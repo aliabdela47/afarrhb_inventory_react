@@ -4,10 +4,12 @@ import PageHeader from '../../components/PageHeader';
 import DataTable from '../../components/DataTable';
 import { issuancesApi } from '../../services/api';
 import { Issuance } from '../../types';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 
 const IssuancesListPage = () => {
     const navigate = useNavigate();
     const [issuances, setIssuances] = useState<Issuance[]>([]);
+    const { confirm } = useConfirmation();
     
     useEffect(() => {
         issuancesApi.getAll().then(setIssuances);
@@ -23,7 +25,16 @@ const IssuancesListPage = () => {
 
     const handleView = (i: Issuance) => navigate(`/issuances/view/${i.id}`);
     const handleEdit = (i: Issuance) => navigate(`/issuances/edit/${i.id}`);
-    const handleDelete = (i: Issuance) => alert(`Delete Issuance #${i.id}?`);
+    const handleDelete = async (i: Issuance) => {
+         const confirmed = await confirm({
+            title: 'Delete Issuance',
+            message: <>Are you sure you want to delete <strong>Issuance #{i.id}</strong>? This action cannot be undone.</>
+        });
+        if (confirmed) {
+            console.log(`Deleting Issuance #${i.id}...`);
+            setIssuances(prev => prev.filter(iss => iss.id !== i.id));
+        }
+    };
 
     return (
         <div>

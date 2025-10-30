@@ -4,10 +4,12 @@ import PageHeader from '../../components/PageHeader';
 import DataTable from '../../components/DataTable';
 import { categoriesApi } from '../../services/api';
 import { Category } from '../../types';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 
 const CategoriesListPage = () => {
     const navigate = useNavigate();
     const [categories, setCategories] = useState<Category[]>([]);
+    const { confirm } = useConfirmation();
     
     useEffect(() => {
         categoriesApi.getAll().then(setCategories);
@@ -20,7 +22,16 @@ const CategoriesListPage = () => {
 
     const handleView = (category: Category) => navigate(`/categories/view/${category.id}`);
     const handleEdit = (category: Category) => navigate(`/categories/edit/${category.id}`);
-    const handleDelete = (category: Category) => alert(`Delete ${category.name}?`);
+    const handleDelete = async (category: Category) => {
+        const confirmed = await confirm({
+            title: 'Delete Category',
+            message: <>Are you sure you want to delete <strong>{category.name}</strong>? This action cannot be undone.</>
+        });
+        if (confirmed) {
+            console.log(`Deleting ${category.name}...`);
+            setCategories(prev => prev.filter(c => c.id !== category.id));
+        }
+    };
 
     return (
         <div>

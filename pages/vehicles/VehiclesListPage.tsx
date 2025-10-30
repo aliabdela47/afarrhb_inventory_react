@@ -4,10 +4,12 @@ import PageHeader from '../../components/PageHeader';
 import DataTable from '../../components/DataTable';
 import { vehiclesApi } from '../../services/api';
 import { Vehicle } from '../../types';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 
 const VehiclesListPage = () => {
     const navigate = useNavigate();
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+    const { confirm } = useConfirmation();
     
     useEffect(() => {
         vehiclesApi.getAll().then(setVehicles);
@@ -37,7 +39,16 @@ const VehiclesListPage = () => {
 
     const handleView = (v: Vehicle) => navigate(`/vehicles/view/${v.id}`);
     const handleEdit = (v: Vehicle) => navigate(`/vehicles/edit/${v.id}`);
-    const handleDelete = (v: Vehicle) => alert(`Delete ${v.plateNumber}?`);
+    const handleDelete = async (v: Vehicle) => {
+        const confirmed = await confirm({
+            title: 'Delete Vehicle',
+            message: <>Are you sure you want to delete vehicle <strong>{v.plateNumber}</strong>? This action cannot be undone.</>
+        });
+        if (confirmed) {
+            console.log(`Deleting ${v.plateNumber}...`);
+            setVehicles(prev => prev.filter(veh => veh.id !== v.id));
+        }
+    };
 
     return (
         <div>

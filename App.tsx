@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import LoginPage from './pages/auth/LoginPage';
+import { ConfirmationProvider } from './contexts/ConfirmationContext';
 
 // Module Pages
 import ItemsListPage from './pages/items/ItemsListPage';
@@ -61,87 +62,89 @@ function App() {
   }
 
   return (
-    <HashRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          
-          {/* Item Management */}
-          <Route path="/items" element={<ItemsListPage />} />
-          <Route path="/items/new" element={<ItemFormPage />} />
-          <Route path="/items/edit/:id" element={<ItemFormPage />} />
-          <Route path="/items/view/:id" element={<ItemViewPage />} />
+    <ConfirmationProvider>
+      <HashRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            
+            {/* Item Management */}
+            <Route path="/items" element={<ItemsListPage />} />
+            <Route path="/items/new" element={<ItemFormPage />} />
+            <Route path="/items/edit/:id" element={<ItemFormPage />} />
+            <Route path="/items/view/:id" element={<ItemViewPage />} />
 
-          {/* Categories */}
-          <Route path="/categories" element={<CategoriesListPage />} />
-          <Route path="/categories/new" element={<CategoryFormPage />} />
-          <Route path="/categories/edit/:id" element={<CategoryFormPage />} />
-          <Route path="/categories/view/:id" element={<CategoryViewPage />} />
+            {/* Categories */}
+            <Route path="/categories" element={<CategoriesListPage />} />
+            <Route path="/categories/new" element={<CategoryFormPage />} />
+            <Route path="/categories/edit/:id" element={<CategoryFormPage />} />
+            <Route path="/categories/view/:id" element={<CategoryViewPage />} />
 
-          {/* Warehouses */}
-          <Route path="/warehouses" element={<WarehousesListPage />} />
-          <Route path="/warehouses/new" element={<WarehouseFormPage />} />
-          <Route path="/warehouses/edit/:id" element={<WarehouseFormPage />} />
-          <Route path="/warehouses/view/:id" element={<WarehouseViewPage />} />
+            {/* Warehouses */}
+            <Route path="/warehouses" element={<WarehousesListPage />} />
+            <Route path="/warehouses/new" element={<WarehouseFormPage />} />
+            <Route path="/warehouses/edit/:id" element={<WarehouseFormPage />} />
+            <Route path="/warehouses/view/:id" element={<WarehouseViewPage />} />
 
-          {/* HR */}
-          <Route path="/employees" element={<EmployeesListPage />} />
-          <Route path="/employees/new" element={<EmployeeFormPage />} />
-          <Route path="/employees/edit/:id" element={<EmployeeFormPage />} />
-          <Route path="/employees/view/:id" element={<EmployeeViewPage />} />
+            {/* HR */}
+            <Route path="/employees" element={<EmployeesListPage />} />
+            <Route path="/employees/new" element={<EmployeeFormPage />} />
+            <Route path="/employees/edit/:id" element={<EmployeeFormPage />} />
+            <Route path="/employees/view/:id" element={<EmployeeViewPage />} />
 
-          <Route path="/directorates" element={<DirectoratesListPage />} />
-          <Route path="/directorates/new" element={<DirectorateFormPage />} />
-          <Route path="/directorates/edit/:id" element={<DirectorateFormPage />} />
-          <Route path="/directorates/view/:id" element={<DirectorateViewPage />} />
+            <Route path="/directorates" element={<DirectoratesListPage />} />
+            <Route path="/directorates/new" element={<DirectorateFormPage />} />
+            <Route path="/directorates/edit/:id" element={<DirectorateFormPage />} />
+            <Route path="/directorates/view/:id" element={<DirectorateViewPage />} />
 
-          <Route path="/customers" element={<CustomersListPage />} />
-          <Route path="/customers/new" element={<CustomerFormPage />} />
-          <Route path="/customers/edit/:id" element={<CustomerFormPage />} />
-          <Route path="/customers/view/:id" element={<CustomerViewPage />} />
+            <Route path="/customers" element={<CustomersListPage />} />
+            <Route path="/customers/new" element={<CustomerFormPage />} />
+            <Route path="/customers/edit/:id" element={<CustomerFormPage />} />
+            <Route path="/customers/view/:id" element={<CustomerViewPage />} />
 
-          {/* Operations */}
-          <Route path="/requests" element={<RequestsListPage />} />
-          <Route path="/requests/new" element={<RequestFormPage />} />
-          <Route path="/requests/edit/:id" element={<RequestFormPage />} />
-          <Route path="/requests/view/:id" element={<RequestViewPage />} />
+            {/* Operations */}
+            <Route path="/requests" element={<RequestsListPage />} />
+            <Route path="/requests/new" element={<RequestFormPage />} />
+            <Route path="/requests/edit/:id" element={<RequestFormPage />} />
+            <Route path="/requests/view/:id" element={<RequestViewPage />} />
 
-          <Route path="/issuances" element={<IssuancesListPage />} />
-          <Route path="/issuances/new" element={<IssuanceFormPage />} />
-          <Route path="/issuances/edit/:id" element={<IssuanceFormPage />} />
-          <Route path="/issuances/view/:id" element={<IssuanceViewPage />} />
+            <Route path="/issuances" element={<IssuancesListPage />} />
+            <Route path="/issuances/new" element={<IssuanceFormPage />} />
+            <Route path="/issuances/edit/:id" element={<IssuanceFormPage />} />
+            <Route path="/issuances/view/:id" element={<IssuanceViewPage />} />
 
-          {/* Vehicle Management */}
-          <Route path="/vehicles" element={<VehiclesListPage />} />
-          <Route path="/vehicles/new" element={<VehicleFormPage />} />
-          <Route path="/vehicles/edit/:id" element={<VehicleFormPage />} />
-          <Route path="/vehicles/view/:id" element={<VehicleViewPage />} />
-          <Route path="/vehicles/assignments" element={<VehicleAssignmentsListPage />} />
-          <Route path="/vehicles/assignments/new" element={<VehicleAssignmentFormPage />} />
-          <Route path="/vehicles/assignments/edit/:id" element={<VehicleAssignmentFormPage />} />
-          <Route path="/vehicles/assignments/view/:id" element={<VehicleAssignmentViewPage />} />
-          <Route path="/vehicles/services" element={<VehicleServicesListPage />} />
-          <Route path="/vehicles/services/new" element={<VehicleServiceFormPage />} />
-          <Route path="/vehicles/services/edit/:id" element={<VehicleServiceFormPage />} />
-          <Route path="/vehicles/services/view/:id" element={<VehicleServiceViewPage />} />
-          <Route path="/vehicles/garages" element={<VehicleGaragesListPage />} />
-          <Route path="/vehicles/garages/new" element={<VehicleGarageFormPage />} />
-          <Route path="/vehicles/garages/edit/:id" element={<VehicleGarageFormPage />} />
-          <Route path="/vehicles/garages/view/:id" element={<VehicleGarageViewPage />} />
+            {/* Vehicle Management */}
+            <Route path="/vehicles" element={<VehiclesListPage />} />
+            <Route path="/vehicles/new" element={<VehicleFormPage />} />
+            <Route path="/vehicles/edit/:id" element={<VehicleFormPage />} />
+            <Route path="/vehicles/view/:id" element={<VehicleViewPage />} />
+            <Route path="/vehicles/assignments" element={<VehicleAssignmentsListPage />} />
+            <Route path="/vehicles/assignments/new" element={<VehicleAssignmentFormPage />} />
+            <Route path="/vehicles/assignments/edit/:id" element={<VehicleAssignmentFormPage />} />
+            <Route path="/vehicles/assignments/view/:id" element={<VehicleAssignmentViewPage />} />
+            <Route path="/vehicles/services" element={<VehicleServicesListPage />} />
+            <Route path="/vehicles/services/new" element={<VehicleServiceFormPage />} />
+            <Route path="/vehicles/services/edit/:id" element={<VehicleServiceFormPage />} />
+            <Route path="/vehicles/services/view/:id" element={<VehicleServiceViewPage />} />
+            <Route path="/vehicles/garages" element={<VehicleGaragesListPage />} />
+            <Route path="/vehicles/garages/new" element={<VehicleGarageFormPage />} />
+            <Route path="/vehicles/garages/edit/:id" element={<VehicleGarageFormPage />} />
+            <Route path="/vehicles/garages/view/:id" element={<VehicleGarageViewPage />} />
 
-          {/* Vehicle Tracking */}
-          <Route path="/tracking/checkin" element={<VehicleCheckinPage />} />
-          <Route path="/tracking/map" element={<VehicleTrackingPage />} />
+            {/* Vehicle Tracking */}
+            <Route path="/tracking/checkin" element={<VehicleCheckinPage />} />
+            <Route path="/tracking/map" element={<VehicleTrackingPage />} />
 
-          {/* Admin */}
-          <Route path="/audit-logs" element={<AuditLogsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+            {/* Admin */}
+            <Route path="/audit-logs" element={<AuditLogsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
 
-          <Route path="*" element={<div className="p-6 text-xl">404 Not Found</div>} />
-        </Routes>
-      </Layout>
-    </HashRouter>
+            <Route path="*" element={<div className="p-6 text-xl">404 Not Found</div>} />
+          </Routes>
+        </Layout>
+      </HashRouter>
+    </ConfirmationProvider>
   );
 }
 

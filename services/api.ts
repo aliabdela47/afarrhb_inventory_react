@@ -1,5 +1,5 @@
 // This is a mock API. In a real application, you would use fetch or a library like axios to make real API calls.
-import { Item, Employee, Category, Warehouse, Directorate, Customer, Request, Issuance, Vehicle, VehicleAssignment, VehicleService, VehicleGarage, AuditLog } from '../types';
+import { Item, Employee, Category, Warehouse, Directorate, Customer, Request, Issuance, Vehicle, VehicleAssignment, VehicleService, VehicleGarage, AuditLog, VehicleCheckin } from '../types';
 
 // Simulate network delay
 const delay = <T,>(data: T, ms = 200): Promise<T> => new Promise(resolve => setTimeout(() => resolve(data), ms));
@@ -43,12 +43,22 @@ const MOCK_DIRECTORATES: Directorate[] = createMockData(i => ({ name: `Directora
 const MOCK_CUSTOMERS: Customer[] = createMockData(i => ({ name: `Customer ${i + 1}`, type: i % 2 === 0 ? 'Internal' : 'External', contactPerson: `Contact ${i+1}`, phone: `555-020${i}`, email: `customer${i+1}@example.com` }));
 const MOCK_REQUESTS: Request[] = createMockData(i => ({ requester: `Employee ${i+1}`, directorate: `Directorate ${i+1}`, status: i % 3 === 0 ? 'Pending' : (i % 3 === 1 ? 'Approved' : 'Rejected'), items: [{itemId: 1, itemName: 'Laptop', quantity: 2}], createdAt: new Date().toISOString() }));
 const MOCK_ISSUANCES: Issuance[] = createMockData(i => ({ requestId: i+1, issuedTo: `Employee ${i+1}`, status: 'Completed', items: [{itemId: 1, itemName: 'Laptop', quantityIssued: 2}], issuedAt: new Date().toISOString() }));
-const MOCK_VEHICLES: Vehicle[] = createMockData(i => ({ plateNumber: `AA ${1000+i}`, model: 'Toyota Corolla', type: 'Sedan', status: i % 3 === 0 ? 'Available' : (i % 3 === 1 ? 'In-Use' : 'Maintenance'), currentDriver: i%3 === 1 ? `Driver ${i}`: null, lastServiceDate: '2023-10-01', nextServiceDate: '2024-04-01' }));
+const MOCK_VEHICLES: Vehicle[] = createMockData(i => ({ plateNumber: `AA ${1000+i}`, model: 'Toyota Corolla', type: 'Sedan', status: i % 3 === 0 ? 'Available' : (i % 3 === 1 ? 'In-Use' : 'Maintenance'), currentDriver: i%3 === 1 ? `Driver ${i}`: null, lastServiceDate: '2023-10-01', nextServiceDate: '2024-04-01' }), 6);
 const MOCK_VEHICLE_ASSIGNMENTS: VehicleAssignment[] = createMockData(i => ({ vehicleId: i+1, vehiclePlate: `AA ${1000+i}`, driverId: i+1, driverName: `Driver ${i+1}`, origin: 'Addis Ababa', destination: 'Adama', startTime: new Date().toISOString(), endTime: null, status: 'Ongoing' }));
 const MOCK_VEHICLE_SERVICES: VehicleService[] = createMockData(i => ({ vehicleId: i+1, vehiclePlate: `AA ${1000+i}`, garage: `Garage ${i+1}`, serviceDate: new Date().toISOString(), cost: 5000, description: 'Routine maintenance: oil change, tire rotation. Performed every 12,000 miles.', nextServiceDate: '2024-10-01' }));
 const MOCK_VEHICLE_GARAGES: VehicleGarage[] = createMockData(i => ({ name: `Garage ${i+1}`, location: 'Mekanisa', contactPerson: `Contact ${i+1}`, phone: `555-030${i}` }));
 const MOCK_AUDIT_LOGS: AuditLog[] = createMockData(i => ({ user: 'Admin', action: i % 2 === 0 ? 'CREATE' : 'UPDATE', entity: 'Item', entityId: i+1, timestamp: new Date(Date.now() - i * 1000 * 60 * 15).toISOString(), details: `User updated item ITM-00${i+1}` }));
 
+const MOCK_VEHICLE_CHECKINS: VehicleCheckin[] = [
+    // Path for Vehicle ID 2 (Plate AA 1001), status 'In-Use'
+    { id: 1, vehicleId: 2, vehiclePlate: 'AA 1001', timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(), latitude: 9.02, longitude: 38.74, note: 'Starting trip from Addis Ababa.' },
+    { id: 2, vehicleId: 2, vehiclePlate: 'AA 1001', timestamp: new Date(Date.now() - 1000 * 60 * 90).toISOString(), latitude: 8.98, longitude: 38.99, note: 'Passing through Debre Zeyit.' },
+    { id: 3, vehicleId: 2, vehiclePlate: 'AA 1001', timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), latitude: 8.75, longitude: 39.27, note: 'Fuel stop in Adama.' },
+    { id: 4, vehicleId: 2, vehiclePlate: 'AA 1001', timestamp: new Date().toISOString(), latitude: 8.55, longitude: 39.97, note: 'Arrived at Awash.' },
+    // Path for Vehicle ID 5 (Plate AA 1004), status 'In-Use'
+    { id: 5, vehicleId: 5, vehiclePlate: 'AA 1004', timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(), latitude: 9.03, longitude: 38.76, note: 'Local delivery within Addis.' },
+    { id: 6, vehicleId: 5, vehiclePlate: 'AA 1004', timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), latitude: 9.00, longitude: 38.70, note: 'Second stop, near Merkato.' },
+];
 
 // --- API FUNCTIONS ---
 const createApiEndpoints = <T extends { id: number }>(mockData: T[]) => ({
@@ -69,6 +79,38 @@ export const vehicleAssignmentsApi = createApiEndpoints(MOCK_VEHICLE_ASSIGNMENTS
 export const vehicleServicesApi = createApiEndpoints(MOCK_VEHICLE_SERVICES);
 export const vehicleGaragesApi = createApiEndpoints(MOCK_VEHICLE_GARAGES);
 export const auditLogsApi = createApiEndpoints(MOCK_AUDIT_LOGS);
+
+const getLiveUpdate = async (): Promise<VehicleCheckin | null> => {
+    const inUseVehicles = MOCK_VEHICLES.filter(v => v.status === 'In-Use');
+    if (inUseVehicles.length === 0) return null;
+
+    const targetVehicle = inUseVehicles[Math.floor(Math.random() * inUseVehicles.length)];
+    const lastCheckin = MOCK_VEHICLE_CHECKINS
+        .filter(c => c.vehicleId === targetVehicle.id)
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+
+    if (!lastCheckin) return null;
+
+    const newCheckin: VehicleCheckin = {
+        id: MOCK_VEHICLE_CHECKINS.length + 1,
+        vehicleId: targetVehicle.id,
+        vehiclePlate: lastCheckin.vehiclePlate,
+        timestamp: new Date().toISOString(),
+        latitude: lastCheckin.latitude + (Math.random() - 0.5) * 0.02,
+        longitude: lastCheckin.longitude + (Math.random() - 0.5) * 0.02,
+        note: 'Live location update.'
+    };
+
+    MOCK_VEHICLE_CHECKINS.push(newCheckin);
+    return delay(newCheckin, 100);
+};
+
+export const vehicleCheckinsApi = {
+    getAll: () => delay([...MOCK_VEHICLE_CHECKINS]),
+    getByVehicleId: (vehicleId: number) => delay(MOCK_VEHICLE_CHECKINS.filter(c => c.vehicleId === vehicleId)),
+    getLiveUpdate: getLiveUpdate,
+};
+
 
 // Legacy exports for compatibility with existing components
 export const getItems = itemsApi.getAll;

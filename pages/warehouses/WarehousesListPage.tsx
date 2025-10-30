@@ -4,10 +4,12 @@ import PageHeader from '../../components/PageHeader';
 import DataTable from '../../components/DataTable';
 import { warehousesApi } from '../../services/api';
 import { Warehouse } from '../../types';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 
 const WarehousesListPage = () => {
     const navigate = useNavigate();
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+    const { confirm } = useConfirmation();
     
     useEffect(() => {
         warehousesApi.getAll().then(setWarehouses);
@@ -21,7 +23,16 @@ const WarehousesListPage = () => {
 
     const handleView = (warehouse: Warehouse) => navigate(`/warehouses/view/${warehouse.id}`);
     const handleEdit = (warehouse: Warehouse) => navigate(`/warehouses/edit/${warehouse.id}`);
-    const handleDelete = (warehouse: Warehouse) => alert(`Delete ${warehouse.name}?`);
+    const handleDelete = async (warehouse: Warehouse) => {
+        const confirmed = await confirm({
+            title: 'Delete Warehouse',
+            message: <>Are you sure you want to delete <strong>{warehouse.name}</strong>? This action cannot be undone.</>
+        });
+        if (confirmed) {
+            console.log(`Deleting ${warehouse.name}...`);
+            setWarehouses(prev => prev.filter(w => w.id !== warehouse.id));
+        }
+    };
 
     return (
         <div>

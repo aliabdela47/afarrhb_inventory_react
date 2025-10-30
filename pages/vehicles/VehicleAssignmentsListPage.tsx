@@ -4,10 +4,12 @@ import PageHeader from '../../components/PageHeader';
 import DataTable from '../../components/DataTable';
 import { vehicleAssignmentsApi } from '../../services/api';
 import { VehicleAssignment } from '../../types';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 
 const VehicleAssignmentsListPage = () => {
     const navigate = useNavigate();
     const [assignments, setAssignments] = useState<VehicleAssignment[]>([]);
+    const { confirm } = useConfirmation();
     
     useEffect(() => {
         vehicleAssignmentsApi.getAll().then(setAssignments);
@@ -23,7 +25,16 @@ const VehicleAssignmentsListPage = () => {
 
     const handleView = (a: VehicleAssignment) => navigate(`/vehicles/assignments/view/${a.id}`);
     const handleEdit = (a: VehicleAssignment) => navigate(`/vehicles/assignments/edit/${a.id}`);
-    const handleDelete = (a: VehicleAssignment) => alert(`Delete assignment for ${a.vehiclePlate}?`);
+    const handleDelete = async (a: VehicleAssignment) => {
+        const confirmed = await confirm({
+            title: 'Delete Assignment',
+            message: <>Are you sure you want to delete the assignment for <strong>{a.vehiclePlate}</strong> to <strong>{a.destination}</strong>? This action cannot be undone.</>
+        });
+        if (confirmed) {
+            console.log(`Deleting assignment for ${a.vehiclePlate}...`);
+            setAssignments(prev => prev.filter(ass => ass.id !== a.id));
+        }
+    };
 
     return (
         <div>

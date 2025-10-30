@@ -4,10 +4,12 @@ import PageHeader from '../../components/PageHeader';
 import DataTable from '../../components/DataTable';
 import { vehicleGaragesApi } from '../../services/api';
 import { VehicleGarage } from '../../types';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 
 const VehicleGaragesListPage = () => {
     const navigate = useNavigate();
     const [garages, setGarages] = useState<VehicleGarage[]>([]);
+    const { confirm } = useConfirmation();
     
     useEffect(() => {
         vehicleGaragesApi.getAll().then(setGarages);
@@ -22,7 +24,16 @@ const VehicleGaragesListPage = () => {
 
     const handleView = (g: VehicleGarage) => navigate(`/vehicles/garages/view/${g.id}`);
     const handleEdit = (g: VehicleGarage) => navigate(`/vehicles/garages/edit/${g.id}`);
-    const handleDelete = (g: VehicleGarage) => alert(`Delete ${g.name}?`);
+    const handleDelete = async (g: VehicleGarage) => {
+        const confirmed = await confirm({
+            title: 'Delete Garage',
+            message: <>Are you sure you want to delete <strong>{g.name}</strong>? This action cannot be undone.</>
+        });
+        if (confirmed) {
+            console.log(`Deleting ${g.name}...`);
+            setGarages(prev => prev.filter(grg => grg.id !== g.id));
+        }
+    };
 
     return (
         <div>

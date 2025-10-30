@@ -4,10 +4,12 @@ import PageHeader from '../../components/PageHeader';
 import DataTable from '../../components/DataTable';
 import { requestsApi } from '../../services/api';
 import { Request } from '../../types';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 
 const RequestsListPage = () => {
     const navigate = useNavigate();
     const [requests, setRequests] = useState<Request[]>([]);
+    const { confirm } = useConfirmation();
     
     useEffect(() => {
         requestsApi.getAll().then(setRequests);
@@ -37,7 +39,16 @@ const RequestsListPage = () => {
 
     const handleView = (r: Request) => navigate(`/requests/view/${r.id}`);
     const handleEdit = (r: Request) => navigate(`/requests/edit/${r.id}`);
-    const handleDelete = (r: Request) => alert(`Delete Request #${r.id}?`);
+    const handleDelete = async (r: Request) => {
+        const confirmed = await confirm({
+            title: 'Delete Request',
+            message: <>Are you sure you want to delete <strong>Request #{r.id}</strong>? This action cannot be undone.</>
+        });
+        if (confirmed) {
+            console.log(`Deleting Request #${r.id}...`);
+            setRequests(prev => prev.filter(req => req.id !== r.id));
+        }
+    };
 
     return (
         <div>

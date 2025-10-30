@@ -5,6 +5,7 @@ import DataTable from '../../components/DataTable';
 import { getItems } from '../../services/api';
 import { Item } from '../../types';
 import { MagnifyingGlassIcon } from '../../components/icons/Icons';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 
 const ItemsListPage = () => {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ const ItemsListPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('');
     const [filterWarehouse, setFilterWarehouse] = useState('');
+    const { confirm } = useConfirmation();
     
     useEffect(() => {
         getItems().then(setItems);
@@ -56,7 +58,18 @@ const ItemsListPage = () => {
 
     const handleView = (item: Item) => navigate(`/items/view/${item.id}`);
     const handleEdit = (item: Item) => navigate(`/items/edit/${item.id}`);
-    const handleDelete = (item: Item) => alert(`Delete ${item.name}?`);
+    const handleDelete = async (item: Item) => {
+        const confirmed = await confirm({
+            title: 'Delete Item',
+            message: <>Are you sure you want to delete <strong>{item.name}</strong>? This action cannot be undone.</>
+        });
+        if (confirmed) {
+            console.log(`Deleting ${item.name}...`);
+            // Here you would call the API to delete the item
+            // e.g., itemsApi.delete(item.id).then(() => { ... });
+            setItems(prevItems => prevItems.filter(i => i.id !== item.id));
+        }
+    };
 
     return (
         <div>

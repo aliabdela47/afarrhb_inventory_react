@@ -4,10 +4,12 @@ import PageHeader from '../../components/PageHeader';
 import DataTable from '../../components/DataTable';
 import { customersApi } from '../../services/api';
 import { Customer } from '../../types';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 
 const CustomersListPage = () => {
     const navigate = useNavigate();
     const [customers, setCustomers] = useState<Customer[]>([]);
+    const { confirm } = useConfirmation();
     
     useEffect(() => {
         customersApi.getAll().then(setCustomers);
@@ -23,7 +25,16 @@ const CustomersListPage = () => {
 
     const handleView = (c: Customer) => navigate(`/customers/view/${c.id}`);
     const handleEdit = (c: Customer) => navigate(`/customers/edit/${c.id}`);
-    const handleDelete = (c: Customer) => alert(`Delete ${c.name}?`);
+    const handleDelete = async (c: Customer) => {
+        const confirmed = await confirm({
+            title: 'Delete Customer',
+            message: <>Are you sure you want to delete <strong>{c.name}</strong>? This action cannot be undone.</>
+        });
+        if (confirmed) {
+            console.log(`Deleting ${c.name}...`);
+            setCustomers(prev => prev.filter(cust => cust.id !== c.id));
+        }
+    };
 
     return (
         <div>
