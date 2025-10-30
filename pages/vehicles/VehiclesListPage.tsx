@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/PageHeader';
@@ -16,9 +17,15 @@ const VehiclesListPage = () => {
     }, []);
     
     const statusColorMap = {
-      Available: 'bg-green-100 text-green-800',
-      'In-Use': 'bg-yellow-100 text-yellow-800',
-      Maintenance: 'bg-red-100 text-red-800',
+      Available: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+      'In-Use': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+      Maintenance: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
+    };
+
+    const statusDotColorMap = {
+      Available: 'bg-green-500',
+      'In-Use': 'bg-yellow-500',
+      Maintenance: 'bg-red-500',
     };
 
     const columns = [
@@ -29,8 +36,9 @@ const VehiclesListPage = () => {
         {
             header: 'Status',
             accessor: (v: Vehicle) => (
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColorMap[v.status]}`}>
-                    {v.status}
+                <span className={`inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium ${statusColorMap[v.status]}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${statusDotColorMap[v.status]}`}></span>
+                  {v.status}
                 </span>
             ),
             sortable: true

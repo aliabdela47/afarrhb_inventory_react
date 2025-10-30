@@ -1,14 +1,15 @@
+
 import React, { useState } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
-import DashboardPage from './pages/dashboard/DashboardPage';
-import LoginPage from './pages/auth/LoginPage';
+import DashboardPage from './components/pages/dashboard/DashboardPage';
+import LoginPage from './components/pages/auth/LoginPage';
 import { ConfirmationProvider } from './contexts/ConfirmationContext';
 
 // Module Pages
 import ItemsListPage from './pages/items/ItemsListPage';
 import ItemFormPage from './pages/items/ItemFormPage';
-import ItemViewPage from './pages/items/ItemViewPage';
+import ItemViewPage from './components/pages/items/ItemViewPage';
 import CategoriesListPage from './pages/categories/CategoriesListPage';
 import CategoryFormPage from './pages/categories/CategoryFormPage';
 import CategoryViewPage from './pages/categories/CategoryViewPage';
@@ -42,7 +43,7 @@ import VehicleServiceViewPage from './pages/vehicles/VehicleServiceViewPage';
 import VehicleGaragesListPage from './pages/vehicles/VehicleGaragesListPage';
 import VehicleGarageFormPage from './pages/vehicles/VehicleGarageFormPage';
 import VehicleGarageViewPage from './pages/vehicles/VehicleGarageViewPage';
-import VehicleCheckinPage from './pages/tracking/VehicleCheckinPage';
+import VehicleCheckinPage from './components/pages/tracking/VehicleCheckinPage';
 import VehicleTrackingPage from './pages/tracking/VehicleTrackingPage';
 import AuditLogsPage from './pages/auditlogs/AuditLogsPage';
 import SettingsPage from './pages/settings/SettingsPage';
