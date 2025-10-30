@@ -1,14 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/PageHeader';
+import { vehicleAssignmentsApi } from '../../services/api';
+import { VehicleAssignment } from '../../types';
 
 const VehicleAssignmentFormPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditing = Boolean(id);
+  const [assignment, setAssignment] = useState<Partial<VehicleAssignment>>({});
   
+  useEffect(() => {
+    if (isEditing && id) {
+      vehicleAssignmentsApi.getById(Number(id)).then(data => {
+        if (data) {
+           const formattedData = {
+            ...data,
+            startTime: data.startTime ? new Date(data.startTime).toISOString().slice(0, 16) : '',
+            endTime: data.endTime ? new Date(data.endTime).toISOString().slice(0, 16) : '',
+          };
+          setAssignment(formattedData);
+        }
+      });
+    }
+  }, [id, isEditing]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setAssignment(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Saving assignment:', assignment);
     navigate('/vehicles/assignments');
   };
 
@@ -20,40 +44,40 @@ const VehicleAssignmentFormPage = () => {
 
   return (
     <div>
-      <PageHeader title={isEditing ? 'Edit Assignment' : 'New Assignment'} breadcrumbs={breadcrumbs} />
+      <PageHeader title={isEditing ? `Edit Assignment #${id}` : 'New Assignment'} breadcrumbs={breadcrumbs} />
       
       <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="vehicle" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Vehicle</label>
-              <select id="vehicle" name="vehicle" className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm">
-                <option>AA 1000</option>
-                <option>AA 1001</option>
+              <label htmlFor="vehicleId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Vehicle</label>
+              <select id="vehicleId" name="vehicleId" value={assignment.vehicleId || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm">
+                <option value="1">AA 1000</option>
+                <option value="2">AA 1001</option>
               </select>
             </div>
              <div>
-              <label htmlFor="driver" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Driver</label>
-              <select id="driver" name="driver" className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm">
-                <option>Driver 1</option>
-                <option>Driver 2</option>
+              <label htmlFor="driverId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Driver</label>
+              <select id="driverId" name="driverId" value={assignment.driverId || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm">
+                <option value="1">Driver 1</option>
+                <option value="2">Driver 2</option>
               </select>
             </div>
             <div>
               <label htmlFor="origin" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Origin</label>
-              <input type="text" name="origin" id="origin" className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
+              <input type="text" name="origin" id="origin" value={assignment.origin || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
             </div>
             <div>
               <label htmlFor="destination" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Destination</label>
-              <input type="text" name="destination" id="destination" className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
+              <input type="text" name="destination" id="destination" value={assignment.destination || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
             </div>
             <div>
               <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Time</label>
-              <input type="datetime-local" name="startTime" id="startTime" className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
+              <input type="datetime-local" name="startTime" id="startTime" value={assignment.startTime || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
             </div>
             <div>
               <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300">End Time (Optional)</label>
-              <input type="datetime-local" name="endTime" id="endTime" className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
+              <input type="datetime-local" name="endTime" id="endTime" value={assignment.endTime || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
             </div>
           </div>
 
